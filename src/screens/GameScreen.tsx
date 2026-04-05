@@ -18,7 +18,7 @@ export function GameScreen() {
   } = useInput();
 
   const { gameState, startGame } = useGameLoop({
-    consumeInputFrame,
+    consumeInputFrame: consumeFrameInput,
   });
 
   return (
