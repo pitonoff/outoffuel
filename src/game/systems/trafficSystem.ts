@@ -1,9 +1,9 @@
 import {
   LANE_COUNT,
-  TRAFFIC_COLORS,
   TRAFFIC_DESPAWN_Y,
   TRAFFIC_MAX_SPEED,
   TRAFFIC_MIN_SPEED,
+  TRAFFIC_SPRITES,
 } from "../constants/game";
 import type { GameState, TrafficCar } from "../types";
 import { clamp, distanceOverlap } from "../utils/math";
@@ -28,7 +28,7 @@ function spawnTrafficCar(cars: TrafficCar[]) {
     speed: randomBetween(TRAFFIC_MIN_SPEED, TRAFFIC_MAX_SPEED),
     width: 40,
     height: 78,
-    color: TRAFFIC_COLORS[randomInt(0, TRAFFIC_COLORS.length - 1)],
+    spriteId: TRAFFIC_SPRITES[randomInt(0, TRAFFIC_SPRITES.length - 1)],
   } satisfies TrafficCar;
 }
 

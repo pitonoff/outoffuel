@@ -4,6 +4,8 @@ export type GamePhase = "intro" | "playing" | "win" | "lose";
 
 export type LaneChange = -1 | 0 | 1;
 
+export type CarSpriteId = "player" | "trafficBlue" | "trafficWhite" | "trafficBlack";
+
 export interface InputState {
   acceleratePressed: boolean;
   brakePressed: boolean;
@@ -32,7 +34,7 @@ export interface TrafficCar {
   speed: number;
   width: number;
   height: number;
-  color: string;
+  spriteId: CarSpriteId;
 }
 
 export interface GameState {
@@ -44,6 +46,7 @@ export interface GameState {
   trafficSpawnCooldown: number;
   difficulty: number;
   ecoMeter: number;
+  regenActive: boolean;
   message: string;
   player: PlayerCar;
   traffic: TrafficCar[];

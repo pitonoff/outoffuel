@@ -1,36 +1,42 @@
 import React, { memo, useMemo } from "react";
-import { useWindowDimensions } from "react-native";
 import {
   Canvas,
   Group,
+  Image,
   Rect,
   RoundedRect,
+  type SkImage,
 } from "@shopify/react-native-skia";
 
 import { COLORS } from "../constants/colors";
 import { HORIZON_RATIO, PLAYER_Y_RATIO, ROAD_WIDTH_RATIO } from "../constants/layout";
 import type { GameState, TrafficCar } from "../types";
+import { getTrafficSprite, type CarSpriteSet } from "../hooks/useCarSprites";
 
-interface CarShapeProps {
+interface CarSpriteProps {
+  sprite: SkImage;
   x: number;
   y: number;
   width: number;
   height: number;
-  color: string;
 }
 
-function CarShape({ x, y, width, height, color }: CarShapeProps) {
+function CarSprite({ sprite, x, y, width, height }: CarSpriteProps) {
+  const aspectRatio = sprite.width() / sprite.height();
+  const targetAspectRatio = width / height;
+  const drawWidth = aspectRatio > targetAspectRatio ? width : height * aspectRatio;
+  const drawHeight = aspectRatio > targetAspectRatio ? width / aspectRatio : height;
+
   return (
-    <Group transform={[{ translateX: x - width / 2 }, { translateY: y - height / 2 }]}>
-      <RoundedRect x={0} y={0} width={width} height={height} r={10} color={color} />
-      <RoundedRect x={6} y={10} width={width - 12} height={height - 20} r={8} color={COLORS.window} />
-      <RoundedRect x={6} y={16} width={width - 12} height={18} r={6} color={COLORS.playerCabin} />
-      <RoundedRect x={6} y={height - 34} width={width - 12} height={18} r={6} color={COLORS.playerCabin} />
-      <Rect x={4} y={4} width={8} height={10} color={COLORS.headlight} />
-      <Rect x={width - 12} y={4} width={8} height={10} color={COLORS.headlight} />
-      <Rect x={4} y={height - 14} width={8} height={10} color={COLORS.taillight} />
-      <Rect x={width - 12} y={height - 14} width={8} height={10} color={COLORS.taillight} />
-    </Group>
+    <Image
+      image={sprite}
+      x={x - drawWidth / 2}
+      y={y - drawHeight / 2}
+      width={drawWidth}
+      height={drawHeight}
+      fit="contain"
+      sampling={{ B: 1, C: 1 }}
+    />
   );
 }
 
@@ -40,22 +46,23 @@ function laneCenterX(roadX: number, roadWidth: number, lane: number) {
 
 function trafficToPixels(car: TrafficCar, roadX: number, roadWidth: number, height: number) {
   return {
+    id: car.id,
+    spriteId: car.spriteId,
     x: laneCenterX(roadX, roadWidth, car.lane),
     y: car.y * height,
     width: car.width,
     height: car.height,
-    color: car.color,
   };
 }
 
 interface GameCanvasProps {
   state: GameState;
+  sprites: CarSpriteSet;
+  width: number;
+  height: number;
 }
 
-export const GameCanvas = memo(function GameCanvas({ state }: GameCanvasProps) {
-  const { width: windowWidth, height: windowHeight } = useWindowDimensions();
-  const width = Math.min(windowWidth, 520);
-  const height = Math.max(640, Math.min(windowHeight, 920));
+export const GameCanvas = memo(function GameCanvas({ state, sprites, width, height }: GameCanvasProps) {
   const roadWidth = width * ROAD_WIDTH_RATIO;
   const roadX = (width - roadWidth) / 2;
   const horizonY = height * HORIZON_RATIO;
@@ -114,10 +121,17 @@ export const GameCanvas = memo(function GameCanvas({ state }: GameCanvasProps) {
       })}
 
       {trafficPixels.map((car) => (
-        <CarShape key={car.color + car.y + car.x} {...car} />
+        <CarSprite
+          key={car.id}
+          sprite={getTrafficSprite(sprites, car.spriteId)}
+          x={car.x}
+          y={car.y}
+          width={car.width}
+          height={car.height}
+        />
       ))}
 
-      <CarShape x={playerX} y={playerY} width={state.player.width} height={state.player.height} color={COLORS.playerBody} />
+      <CarSprite sprite={sprites.shared} x={playerX} y={playerY} width={state.player.width} height={state.player.height} />
     </Canvas>
   );
 });

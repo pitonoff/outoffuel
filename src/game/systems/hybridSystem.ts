@@ -32,14 +32,15 @@ export function updateHybridState(state: GameState, input: InputState, dt: numbe
   let batteryDrain = 0;
   let batteryRegen = 0;
 
-  if (mode === "CHARGE") {
-    batteryDrain = 3.2 + state.player.speed * 0.02;
-    if (braking && state.player.speed > 4) {
-      batteryRegen = 10 + state.player.speed * 0.05;
-    }
+  if (braking && state.player.speed > 6) {
+    batteryRegen = 18 + state.player.speed * 0.08;
+    batteryDrain = 0.25;
+    fuelDrain = 0.2;
+  } else if (mode === "CHARGE") {
+    batteryDrain = 2.1 + state.player.speed * 0.012;
   } else if (mode === "ECO") {
     fuelDrain = 0.9;
-    batteryDrain = 0.45;
+    batteryDrain = 0.3;
   } else {
     fuelDrain = 3.8 + state.player.speed * 0.03;
     batteryDrain = state.player.speed > HIGH_SPEED_THRESHOLD || accelerating ? 0.8 : 0.3;
@@ -58,10 +59,12 @@ export function updateHybridState(state: GameState, input: InputState, dt: numbe
   const nextBattery = clamp(state.player.battery - batteryDrain * dt + batteryRegen * dt, 0, 100);
   const nextFuel = clamp(state.player.fuel - fuelDrain * dt, 0, 100);
   const ecoMeter = mode === "ECO" ? 1 : 1 - normalize(state.player.speed, ECO_SPEED_MIN, ECO_SPEED_MAX);
+  const regenActive = batteryRegen > batteryDrain;
 
   return {
     ...state,
     ecoMeter,
+    regenActive,
     player: {
       ...state.player,
       battery: nextBattery,

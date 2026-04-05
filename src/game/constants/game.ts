@@ -1,4 +1,4 @@
-import type { GameState, InputState } from "../types";
+import type { CarSpriteId, GameState, InputState } from "../types";
 
 export const LANE_COUNT = 3;
 export const FIXED_TIMESTEP = 1 / 60;
@@ -23,7 +23,7 @@ export const WIN_MESSAGE = "You reached the gas station.";
 export const LOSE_MESSAGE_FUEL = "You ran out of fuel and charge.";
 export const LOSE_MESSAGE_CRASH = "Traffic collision.";
 
-export const TRAFFIC_COLORS = ["#D94841", "#F2C24C", "#5AA9FF", "#E3E5E8", "#7ED18A"] as const;
+export const TRAFFIC_SPRITES: readonly CarSpriteId[] = ["trafficBlue", "trafficWhite", "trafficBlack"];
 
 export const DEFAULT_INPUT_STATE: InputState = {
   acceleratePressed: false,
@@ -43,6 +43,7 @@ export function createInitialGameState(): GameState {
     trafficSpawnCooldown: 0.6,
     difficulty: 0,
     ecoMeter: 0,
+    regenActive: false,
     message: START_MESSAGE,
     player: {
       lane: 1,
